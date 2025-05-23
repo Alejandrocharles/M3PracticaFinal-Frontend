@@ -2,11 +2,34 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { userService } from '../services/api';
 import { useNavigate, Link } from 'react-router-dom';
+import {
+  AppBar,
+  Toolbar,
+  Typography,
+  Button,
+  Container,
+  Paper,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  IconButton,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
+  Alert,
+  Box
+} from '@mui/material';
 
 export default function Dashboard() {
   const [users, setUsers] = useState([]);
   const [error, setError] = useState('');
   const [editingUser, setEditingUser] = useState(null);
+  const [openDialog, setOpenDialog] = useState(false);
   const { logout } = useAuth();
   const navigate = useNavigate();
 
@@ -45,6 +68,7 @@ export default function Dashboard() {
       return;
     }
     setEditingUser(user);
+    setOpenDialog(true);
   };
 
   const handleUpdate = async (e) => {
@@ -61,6 +85,7 @@ export default function Dashboard() {
       });
       setUsers(users.map(user => user.id === parseInt(updatedUser.id) ? updatedUser : user));
       setEditingUser(null);
+      setOpenDialog(false);
     } catch (err) {
       setError(err.message || 'Failed to update user');
     }
@@ -72,110 +97,94 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100">
-      <nav className="bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-16">
-            <div className="flex items-center space-x-4">
-              <h1 className="text-xl font-semibold">Dashboard</h1>
-              <Link
-                to="/users"
-                className="px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700"
-              >
-                Gestión de Usuarios
-              </Link>
-            </div>
-            <div className="flex items-center">
-              <button
-                onClick={handleLogout}
-                className="ml-4 px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700"
-              >
-                Logout
-              </button>
-            </div>
-          </div>
-        </div>
-      </nav>
+    <Box sx={{ flexGrow: 1 }}>
+      <AppBar position="static">
+        <Toolbar>
+          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+            Dashboard
+          </Typography>
+          <Button
+            component={Link}
+            to="/users"
+            color="inherit"
+            sx={{ mr: 2 }}
+          >
+            Gestión de Usuarios
+          </Button>
+          <Button color="inherit" onClick={handleLogout}>
+            Logout
+          </Button>
+        </Toolbar>
+      </AppBar>
 
-      <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+      <Container maxWidth="lg" sx={{ mt: 4 }}>
         {error && (
-          <div className="mb-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative">
+          <Alert severity="error" sx={{ mb: 2 }}>
             {error}
-          </div>
+          </Alert>
         )}
 
-        {editingUser ? (
-          <div className="bg-white shadow sm:rounded-lg p-6 mb-6">
-            <h2 className="text-lg font-medium mb-4">Edit User</h2>
-            <form onSubmit={handleUpdate}>
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Username</label>
-                  <input
-                    type="text"
-                    value={editingUser.username}
-                    onChange={(e) => setEditingUser({ ...editingUser, username: e.target.value })}
-                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Email</label>
-                  <input
-                    type="email"
-                    value={editingUser.email}
-                    onChange={(e) => setEditingUser({ ...editingUser, email: e.target.value })}
-                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                  />
-                </div>
-                <div className="flex justify-end space-x-3">
-                  <button
-                    type="button"
-                    onClick={() => setEditingUser(null)}
-                    className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700"
-                  >
-                    Save
-                  </button>
-                </div>
-              </div>
-            </form>
-          </div>
-        ) : (
-          <div className="bg-white shadow overflow-hidden sm:rounded-md">
-            <ul className="divide-y divide-gray-200">
+        <TableContainer component={Paper}>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell>Username</TableCell>
+                <TableCell>Email</TableCell>
+                <TableCell align="right">Actions</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
               {users.map((user) => (
-                <li key={user.id} className="px-6 py-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium text-gray-900">{user.username}</p>
-                      <p className="text-sm text-gray-500">{user.email}</p>
-                    </div>
-                    <div className="flex space-x-3">
-                      <button
-                        onClick={() => handleEdit(user)}
-                        className="text-indigo-600 hover:text-indigo-900"
-                      >
-                        Edit
-                      </button>
-                      <button
-                        onClick={() => handleDelete(user.id)}
-                        className="text-red-600 hover:text-red-900"
-                      >
-                        Delete
-                      </button>
-                    </div>
-                  </div>
-                </li>
+                <TableRow key={user.id}>
+                  <TableCell>{user.username}</TableCell>
+                  <TableCell>{user.email}</TableCell>
+                  <TableCell align="right">
+                    <IconButton
+                      color="primary"
+                      onClick={() => handleEdit(user)}
+                    >
+                      Edit
+                    </IconButton>
+                    <IconButton
+                      color="error"
+                      onClick={() => handleDelete(user.id)}
+                    >
+                      Delete
+                    </IconButton>
+                  </TableCell>
+                </TableRow>
               ))}
-            </ul>
-          </div>
-        )}
-      </div>
-    </div>
+            </TableBody>
+          </Table>
+        </TableContainer>
+
+        <Dialog open={openDialog} onClose={() => setOpenDialog(false)}>
+          <DialogTitle>Edit User</DialogTitle>
+          <DialogContent>
+            <Box component="form" onSubmit={handleUpdate} sx={{ mt: 2 }}>
+              <TextField
+                fullWidth
+                label="Username"
+                value={editingUser?.username || ''}
+                onChange={(e) => setEditingUser({ ...editingUser, username: e.target.value })}
+                margin="normal"
+              />
+              <TextField
+                fullWidth
+                label="Email"
+                type="email"
+                value={editingUser?.email || ''}
+                onChange={(e) => setEditingUser({ ...editingUser, email: e.target.value })}
+                margin="normal"
+              />
+            </Box>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setOpenDialog(false)}>Cancel</Button>
+            <Button onClick={handleUpdate} variant="contained">Save</Button>
+          </DialogActions>
+        </Dialog>
+      </Container>
+    </Box>
   );
 } 

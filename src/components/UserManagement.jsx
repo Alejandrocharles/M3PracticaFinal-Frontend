@@ -1,11 +1,31 @@
 import { useState, useEffect } from 'react';
 import { userService } from '../services/api';
+import {
+  Container,
+  Paper,
+  Typography,
+  TextField,
+  Button,
+  Alert,
+  Box,
+  Grid,
+  Card,
+  CardContent,
+  CardActions,
+  IconButton,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Divider
+} from '@mui/material';
 
 export default function UserManagement() {
   const [users, setUsers] = useState([]);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [editingUser, setEditingUser] = useState(null);
+  const [openDialog, setOpenDialog] = useState(false);
   const [newUser, setNewUser] = useState({
     username: '',
     email: '',
@@ -40,6 +60,7 @@ export default function UserManagement() {
 
   const handleEdit = (user) => {
     setEditingUser(user);
+    setOpenDialog(true);
   };
 
   const handleUpdate = async (e) => {
@@ -51,6 +72,7 @@ export default function UserManagement() {
       });
       setSuccess('Usuario actualizado exitosamente');
       setEditingUser(null);
+      setOpenDialog(false);
       loadUsers();
     } catch (err) {
       setError(err.message || 'Error al actualizar usuario');
@@ -70,144 +92,136 @@ export default function UserManagement() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 py-6 flex flex-col justify-center sm:py-12">
-      <div className="relative py-3 sm:max-w-xl sm:mx-auto">
-        <div className="relative px-4 py-10 bg-white mx-8 md:mx-0 shadow rounded-3xl sm:p-10">
-          <div className="max-w-md mx-auto">
-            <div className="divide-y divide-gray-200">
-              <div className="py-8 text-base leading-6 space-y-4 text-gray-700 sm:text-lg sm:leading-7">
-                <h2 className="text-2xl font-bold mb-8 text-center text-gray-900">Gestión de Usuarios</h2>
+    <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+      <Typography variant="h4" component="h1" gutterBottom align="center">
+        Gestión de Usuarios
+      </Typography>
 
-                {error && (
-                  <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4">
-                    {error}
-                  </div>
-                )}
+      {error && (
+        <Alert severity="error" sx={{ mb: 2 }}>
+          {error}
+        </Alert>
+      )}
 
-                {success && (
-                  <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4">
-                    {success}
-                  </div>
-                )}
+      {success && (
+        <Alert severity="success" sx={{ mb: 2 }}>
+          {success}
+        </Alert>
+      )}
 
-                {/* Formulario para crear nuevo usuario */}
-                <form onSubmit={handleCreate} className="mb-8">
-                  <h3 className="text-lg font-medium mb-4">Crear Nuevo Usuario</h3>
-                  <div className="space-y-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">Nombre de Usuario</label>
-                      <input
-                        type="text"
-                        value={newUser.username}
-                        onChange={(e) => setNewUser({ ...newUser, username: e.target.value })}
-                        className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                        required
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">Email</label>
-                      <input
-                        type="email"
-                        value={newUser.email}
-                        onChange={(e) => setNewUser({ ...newUser, email: e.target.value })}
-                        className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                        required
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">Contraseña</label>
-                      <input
-                        type="password"
-                        value={newUser.password}
-                        onChange={(e) => setNewUser({ ...newUser, password: e.target.value })}
-                        className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                        required
-                      />
-                    </div>
-                    <button
-                      type="submit"
-                      className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                    >
-                      Crear Usuario
-                    </button>
-                  </div>
-                </form>
+      <Grid container spacing={3}>
+        {/* Formulario para crear nuevo usuario */}
+        <Grid item xs={12} md={4}>
+          <Paper sx={{ p: 3 }}>
+            <Typography variant="h6" gutterBottom>
+              Crear Nuevo Usuario
+            </Typography>
+            <Box component="form" onSubmit={handleCreate}>
+              <TextField
+                fullWidth
+                label="Nombre de Usuario"
+                value={newUser.username}
+                onChange={(e) => setNewUser({ ...newUser, username: e.target.value })}
+                margin="normal"
+                required
+              />
+              <TextField
+                fullWidth
+                label="Email"
+                type="email"
+                value={newUser.email}
+                onChange={(e) => setNewUser({ ...newUser, email: e.target.value })}
+                margin="normal"
+                required
+              />
+              <TextField
+                fullWidth
+                label="Contraseña"
+                type="password"
+                value={newUser.password}
+                onChange={(e) => setNewUser({ ...newUser, password: e.target.value })}
+                margin="normal"
+                required
+              />
+              <Button
+                type="submit"
+                variant="contained"
+                fullWidth
+                sx={{ mt: 2 }}
+              >
+                Crear Usuario
+              </Button>
+            </Box>
+          </Paper>
+        </Grid>
 
-                {/* Lista de usuarios */}
-                <div className="mt-8">
-                  <h3 className="text-lg font-medium mb-4">Usuarios Existentes</h3>
-                  <div className="space-y-4">
-                    {users.map((user) => (
-                      <div key={user.id} className="bg-gray-50 p-4 rounded-lg">
-                        {editingUser && editingUser.id === user.id ? (
-                          <form onSubmit={handleUpdate} className="space-y-4">
-                            <div>
-                              <label className="block text-sm font-medium text-gray-700">Nombre de Usuario</label>
-                              <input
-                                type="text"
-                                value={editingUser.username}
-                                onChange={(e) => setEditingUser({ ...editingUser, username: e.target.value })}
-                                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                                required
-                              />
-                            </div>
-                            <div>
-                              <label className="block text-sm font-medium text-gray-700">Email</label>
-                              <input
-                                type="email"
-                                value={editingUser.email}
-                                onChange={(e) => setEditingUser({ ...editingUser, email: e.target.value })}
-                                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                                required
-                              />
-                            </div>
-                            <div className="flex space-x-2">
-                              <button
-                                type="submit"
-                                className="flex-1 py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700"
-                              >
-                                Guardar
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => setEditingUser(null)}
-                                className="flex-1 py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
-                              >
-                                Cancelar
-                              </button>
-                            </div>
-                          </form>
-                        ) : (
-                          <div className="flex justify-between items-center">
-                            <div>
-                              <p className="text-sm font-medium text-gray-900">{user.username}</p>
-                              <p className="text-sm text-gray-500">{user.email}</p>
-                            </div>
-                            <div className="flex space-x-2">
-                              <button
-                                onClick={() => handleEdit(user)}
-                                className="text-indigo-600 hover:text-indigo-900"
-                              >
-                                Editar
-                              </button>
-                              <button
-                                onClick={() => handleDelete(user.id)}
-                                className="text-red-600 hover:text-red-900"
-                              >
-                                Eliminar
-                              </button>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+        {/* Lista de usuarios */}
+        <Grid item xs={12} md={8}>
+          <Paper sx={{ p: 3 }}>
+            <Typography variant="h6" gutterBottom>
+              Usuarios Existentes
+            </Typography>
+            <Grid container spacing={2}>
+              {users.map((user) => (
+                <Grid item xs={12} key={user.id}>
+                  <Card>
+                    <CardContent>
+                      <Typography variant="h6">{user.username}</Typography>
+                      <Typography color="textSecondary">{user.email}</Typography>
+                    </CardContent>
+                    <CardActions>
+                      <Button
+                        size="small"
+                        color="primary"
+                        onClick={() => handleEdit(user)}
+                      >
+                        Editar
+                      </Button>
+                      <Button
+                        size="small"
+                        color="error"
+                        onClick={() => handleDelete(user.id)}
+                      >
+                        Eliminar
+                      </Button>
+                    </CardActions>
+                  </Card>
+                </Grid>
+              ))}
+            </Grid>
+          </Paper>
+        </Grid>
+      </Grid>
+
+      {/* Diálogo de edición */}
+      <Dialog open={openDialog} onClose={() => setOpenDialog(false)}>
+        <DialogTitle>Editar Usuario</DialogTitle>
+        <DialogContent>
+          <Box component="form" onSubmit={handleUpdate} sx={{ mt: 2 }}>
+            <TextField
+              fullWidth
+              label="Nombre de Usuario"
+              value={editingUser?.username || ''}
+              onChange={(e) => setEditingUser({ ...editingUser, username: e.target.value })}
+              margin="normal"
+              required
+            />
+            <TextField
+              fullWidth
+              label="Email"
+              type="email"
+              value={editingUser?.email || ''}
+              onChange={(e) => setEditingUser({ ...editingUser, email: e.target.value })}
+              margin="normal"
+              required
+            />
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpenDialog(false)}>Cancelar</Button>
+          <Button onClick={handleUpdate} variant="contained">Guardar</Button>
+        </DialogActions>
+      </Dialog>
+    </Container>
   );
 } 
