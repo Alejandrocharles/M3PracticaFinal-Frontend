@@ -1,10 +1,26 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import App from './App'
+import { AuthProvider } from './contexts/AuthContext'
 
 describe('App', () => {
-  it('renders hello world', () => {
-    render(<App />)
-    expect(screen.getByText('Hello World')).toBeInTheDocument()
+  beforeEach(() => {
+    // Simulate a logged-in user by setting a token
+    window.localStorage.setItem('token', 'test-token');
+  });
+
+  afterEach(() => {
+    window.localStorage.clear();
+  });
+
+  it('renders login form', () => {
+    render(
+      <AuthProvider>
+        <App />
+      </AuthProvider>
+    )
+    expect(screen.getByText('Sign in to your account')).toBeInTheDocument()
+    expect(screen.getByRole('textbox', { name: /email address/i })).toBeInTheDocument();
+    expect(screen.getByLabelText(/password/i)).toBeInTheDocument();
   })
 }) 
